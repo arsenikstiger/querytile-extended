@@ -3,13 +3,15 @@
 <head>          
 	<script src="lib/VSS.SDK.js"></script>
 	<script type="text/javascript">
-		VSS.init({                        
+		VSS.init({
 			explicitNotifyLoaded: true,
 			usePlatformStyles: true
 		});
 		const vssContext = VSS.getWebContext();
 
-		VSS.require("TFS/Dashboards/WidgetHelpers", function (WidgetHelpers) {
+		//VSS.require("TFS/Dashboards/WidgetHelpers", function (WidgetHelpers) {
+
+		VSS.require(["TFS/Dashboards/WidgetHelpers", "TFS/WorkItemTracking/RestClient"], function (WidgetHelpers, TFS_Wit_WebApi) {
 			WidgetHelpers.IncludeWidgetStyles();
 			
 			VSS.register("querytile-extended-widget", function () {
