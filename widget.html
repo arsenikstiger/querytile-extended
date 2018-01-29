@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>          
+	<script src="sdk/scripts/VSS.SDK.min.js"></script>
+	<script type="text/javascript">
+		console.log("1. VSS Init");
+
+		VSS.init({                        
+			explicitNotifyLoaded: true,
+			usePlatformStyles: true
+		});
+
+		console.log("2. Require WidgetHelpers");
+
+		VSS.require("TFS/Dashboards/WidgetHelpers", function (WidgetHelpers) {
+			
+			console.log("2.0. WidgetHelpers :");
+			console.log(WidgetHelpers);
+
+			console.log("2.1. IncludeWidgetStyles");
+
+			WidgetHelpers.IncludeWidgetStyles();
+			
+			console.log("2.2. Modif text");
+
+			VSS.register("querytile-extended-widget", function () {
+				return {
+					load: function (widgetSettings) {
+
+						console.log("2.2.0. widgetSettings :");
+						console.log(widgetSettings);
+
+						console.log("2.2.1. Modif text");
+
+						var $title = $('h2.title');
+						$title.text("QueryTile Extended");
+
+						console.log("2.2.2. Return WidgetHelpers");
+
+						return WidgetHelpers.WidgetStatusHelper.Success();
+					}
+				}
+			});
+
+			console.log("2.3. VSS NotifyLoadSucceeded");
+
+			VSS.notifyLoadSucceeded();
+
+			console.log("2.4. End Require WidgetHelpers");
+		});
+
+		console.log("3. End Script");
+	</script>         
+</head>
+<body>
+	<div class="widget">
+		<h2 class="title">Counter widget</h2>
+		<div class="big-count">223</div>
+		<div>Additional text</div>
+	</div>
+</body>
+</html>

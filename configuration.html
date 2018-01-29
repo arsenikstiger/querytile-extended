@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>          
+	<script src="sdk/scripts/VSS.SDK.min.js"></script>
+	<script type="text/javascript">
+		VSS.init({                        
+			explicitNotifyLoaded: true,
+			usePlatformStyles: true
+		});
+
+		VSS.require("TFS/Dashboards/WidgetHelpers", function (WidgetHelpers) {
+			WidgetHelpers.IncludeWidgetStyles();
+			VSS.register("querytile-extended-widget", function () {
+				return {
+					load: function (widgetSettings) {
+						var $title = $('h2.title');
+						$title.text('QueryTile Extended');
+
+						return WidgetHelpers.WidgetStatusHelper.Success();
+					}
+				}
+			});
+			VSS.notifyLoadSucceeded();
+		});
+	</script>         
+</head>
+<body>
+	<div class="widget-configuration">
+		<h2 class="title">Counter widget</h2>
+		<div class="big-count">223</div>
+		<div>Additional text</div>
+	</div>
+</body>
+</html>
