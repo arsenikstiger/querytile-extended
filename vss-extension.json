@@ -80,7 +80,7 @@
       }
     },
     {
-      "id": "querytile-extended-widget-Configuration",
+      "id": "querytile-extended-widget-configuration",
       "type": "ms.vss-dashboards-web.widget-configuration",
       "targets": [
         "ms.vss-dashboards-web.widget-configuration"
