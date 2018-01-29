@@ -1,7 +1,7 @@
 {
   "manifestVersion": 1,
   "id": "querytile-extended",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "name": "Query Tile Extended",
   "scopes": ["vso.work"],
   "description": "Query Tile extended wih aggregation function",
@@ -42,8 +42,9 @@
       "addressable": true
     },
     {
-      "path": "sdk/scripts",
-      "addressable": true
+      "path": "node_modules/vss-web-extension-sdk/lib",
+      "addressable": true,
+      "packagePath": "lib"
     },
     {
       "path": "images",
