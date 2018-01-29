@@ -1,7 +1,7 @@
 {
   "manifestVersion": 1,
   "id": "querytile-extended",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "name": "Query Tile Extended",
   "scopes": ["vso.work"],
   "description": "Query Tile extended wih aggregation function",
