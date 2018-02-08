@@ -1,34 +1,398 @@
 <!DOCTYPE html>
 <html>
-<head>          
-	<script src="sdk/scripts/VSS.SDK.js"></script>
+
+<head>
+	<script src="bower_components/vss-web-extension-sdk/lib/VSS.SDK.min.js"></script>
 	<script type="text/javascript">
-		VSS.init({                        
+		VSS.init({
 			explicitNotifyLoaded: true,
 			usePlatformStyles: true
 		});
 
-		VSS.require("TFS/Dashboards/WidgetHelpers", function (WidgetHelpers) {
-			WidgetHelpers.IncludeWidgetStyles();
-			VSS.register("querytile-extended-widget", function () {
+		var configureLog = function () {
+			try {
+				var url = new URL(document.referrer);
+				var urlParams = new URLSearchParams(url.search.substring(1));
+				debug = urlParams.has("debug");
+				info = urlParams.has("info");
+			}
+			catch (exception) {
+				console.log("unable to configure Log");
+			}
+		}
+
+		var logDebug = function (message) {
+			if (debug === true) {
+				console.log("[DEBUG] " + "(" + new Date().toLocaleTimeString() + ") ", message);
+			}
+		}
+
+		var logInfo = function (message) {
+			if (info === true) {
+				console.log("[INFO] " + "(" + new Date().toLocaleTimeString() + ") ", message);
+			}
+		}
+
+		//Init
+		var debug = false;
+		var info = false;
+		configureLog();
+		var settings;
+
+		var queryOps = 0;
+		var queriesSource = [];
+
+		VSS.require(["TFS/Dashboards/WidgetHelpers", "TFS/WorkItemTracking/RestClient", "TFS/WorkItemTracking/Contracts", "VSS/Controls", "VSS/Controls/Combos", "VSS/Controls/TreeView"], function (WidgetHelpers, RestClient, Contracts, Controls, Combos, TreeView) {
+			logDebug("VSS.require()");
+
+			WidgetHelpers.IncludeWidgetConfigurationStyles();
+
+			//Gets current project ID
+			var projectId = VSS.getWebContext().project.id;
+			logInfo("VSS.getWebContext():");
+			logInfo(VSS.getWebContext());
+
+			//Registers functions for the specified widget
+			VSS.register("querytile-extended-widget-configuration", function () {
+				logDebug("VSS.register()");
+
+				var closeQueryOps = function () {
+					queryOps -= 1;
+
+					if (queryOps > 0)
+						return;
+
+					//Sort options
+					var $queryDropdownOptions = $("#query-dropdown option");		// Retrieve options
+					logDebug($queryDropdownOptions);
+					$queryDropdownOptions.detach().sort(function (a, b) {               // Detach from select, then Sort
+						var at = $(a).text();
+						var bt = $(b).text();
+						return (at > bt) ? 1 : ((at < bt) ? -1 : 0);      				// Tell the sort function how to order
+					});
+					$queryDropdownOptions.appendTo($queryDropdown);
+
+					//Select configured id
+					if (settings && settings.queryId) {
+						$queryDropdown.val(settings.queryId);
+					}
+
+					$queryDropdown.prop('disabled', false);
+				}
+
+				var startQueryOps = function () {
+					queryOps += 1;
+				}
+
+				var iterateThroughQuery = function (query) {
+					logDebug("iterateThroughQuery");
+					logDebug("query:");
+					logDebug(query);
+
+					//If query has no children, pass it
+					if (!("hasChildren" in query) || query.hasChildren === false) {
+						logDebug("query has no children");
+						$queryDropdown.append("<option value='" + query.id + "' >" + query.path + "</option>");
+						return query;
+					}
+
+					$queryDropdown.append("<option class='inverted' value='" + query.id + "' disabled>" + query.path + "</option>");
+
+					//If query has no children properties, must load them
+					if (!("children" in query)) {
+						logDebug("query has children but not loaded");
+
+						startQueryOps();
+
+						return RestClient.getClient().getQuery(projectId, query.id, Contracts.QueryExpand.None, 2, false)
+							.then(function (updatedQuery) {
+								logInfo("RestClient.getClient().getQuery(" + projectId + ", " + query.id + ", " + Contracts.QueryExpand.None + ", 2, false)");
+								logInfo(updatedQuery);
+
+								//For each child, iterate through it
+								logDebug("query.children:");
+								logDebug(updatedQuery.children);
+								updatedQuery.children.forEach(childQuery => {
+									logDebug("iterate a childQuery");
+									childQuery = iterateThroughQuery(childQuery);
+								});
+
+								closeQueryOps();
+
+								return updatedQuery;
+							});
+					}
+
+					//For each child, iterate through it
+					logDebug("query.children:");
+					logDebug(query.children);
+					query.children.forEach(childQuery => {
+						logDebug("iterate a childQuery");
+						childQuery = iterateThroughQuery(childQuery);
+					});
+
+					return query;
+				}
+
+				var iterateThroughQueriesTree = function (queriesTree) {
+					logDebug("iterateThroughQueriesTree");
+					logDebug("queriesTree:");
+					logDebug(queriesTree);
+
+					//Root level
+					for (var i = queriesTree.length - 1; i >= 0; i--) {
+						var query = queriesTree[i];
+						logDebug("query:");
+						logDebug(query);
+
+						//If query is not public, delete it
+						if (query.isPublic === false) {
+							logDebug("query is not public");
+							queriesTree = queriesTree.splice(query, 1);
+							continue;
+						}
+
+						//If query has no children, pass it
+						if (query.hasChildren === false) {
+							logDebug("query has no children");
+							$queryDropdown.append("<option value='" + query.id + "' >" + query.path + "</option>");
+							continue;
+						}
+
+						//If query has children, iterate through them
+						if ("children" in query) {
+							logDebug("query has children");
+							query.children.forEach(childQuery => {
+								childQuery = iterateThroughQuery(childQuery);
+							});
+						}
+					}
+
+					logDebug("final queriesTree:");
+					logDebug(queriesTree);
+					return queriesTree;
+				}
+
+				var populateQueries = function () {
+					logDebug("populateQueries()");
+
+					startQueryOps();
+
+					//Get root queries and two-level children
+					return RestClient.getClient().getQueries(projectId, Contracts.QueryExpand.None, 2, false)
+						.then(function (queries) {
+							logInfo("RestClient.getClient().getQueries(" + projectId + ", " + Contracts.QueryExpand.None + ", 2, false):");
+							logInfo(queries);
+
+							queriesSource = queries;
+							iterateThroughQueriesTree(queriesSource);
+
+							closeQueryOps();
+
+							// Use the widget helper and return success as Widget Status
+							return WidgetHelpers.WidgetStatusHelper.Success();
+						}, function (error) {
+							// Use the widget helper and return failure as Widget Status
+							return WidgetHelpers.WidgetStatusHelper.Failure(error.message);
+						});
+				}
+
+				var populateFields = function () {
+					logDebug("populateFields()");
+
+					return RestClient.getClient().getFields()
+						.then(function (fields) {
+							logInfo("RestClient.getClient().getFields():");
+							logInfo(fields);
+
+							fields.forEach(field => {
+								//If field is numeric, add it to the dropdown
+								if (field.type === Contracts.FieldType.Integer || field.type === Contracts.FieldType.Double) {
+									$fieldDropdown.append("<option value='" + field.referenceName + "' >" + field.name + "</option>");
+								}
+							});
+
+							//Select configured name
+							if (settings && settings.fieldName) {
+								$fieldDropdown.val(settings.fieldName);
+							}
+
+							$fieldDropdown.prop('disabled', false);
+
+							// Use the widget helper and return success as Widget Status
+							return WidgetHelpers.WidgetStatusHelper.Success();
+						}, function (error) {
+							// Use the widget helper and return failure as Widget Status
+							return WidgetHelpers.WidgetStatusHelper.Failure(error.message);
+						});
+				}
+
+				var $queryDropdown = $("#query-dropdown");
+				$queryDropdown.prop('disabled', true);
+
+				var $fieldDropdown = $("#field-dropdown");
+				$fieldDropdown.prop('disabled', true);
+
+				var $aggregationDropdown = $("#aggregation-dropdown");
+
+				var $unitInput = $("#unit-input");
+
 				return {
-					load: function (widgetSettings) {
-						var $title = $('h2.title');
-						$title.text('QueryTile Extended');
+					load: function (widgetSettings, widgetConfigurationContext) {
+						logDebug("onLoad()");
+
+						logInfo("widgetSettings:");
+						logInfo(widgetSettings);
+						logInfo("widgetConfigurationContext:");
+						logInfo(widgetConfigurationContext);
+
+						settings = JSON.parse(widgetSettings.customSettings.data);
+
+						//Select configured aggregation type
+						if (settings && settings.aggregationType) {
+							$aggregationDropdown.val(settings.aggregationType);
+						}
+
+						//Set configured unit
+						if (settings && settings.unit) {
+							$unitInput.val(settings.unit);
+						}
+
+						populateQueries();
+
+						populateFields();
+
+						$queryDropdown.on("change", function () {
+							var customSettings = { data: JSON.stringify({ queryId: $queryDropdown.val() }) };
+							var eventName = WidgetHelpers.WidgetEvent.ConfigurationChange;
+							var eventArgs = WidgetHelpers.WidgetEvent.Args(customSettings);
+							widgetConfigurationContext.notify(eventName, eventArgs);
+						});
+
+						$fieldDropdown.on("change", function () {
+							var customSettings = { data: JSON.stringify({ fieldName: $fieldDropdown.val() }) };
+							var eventName = WidgetHelpers.WidgetEvent.ConfigurationChange;
+							var eventArgs = WidgetHelpers.WidgetEvent.Args(customSettings);
+							widgetConfigurationContext.notify(eventName, eventArgs);
+						});
+
+						$aggregationDropdown.on("change", function () {
+							var customSettings = { data: JSON.stringify({ aggregationType: $aggregationDropdown.val() }) };
+							var eventName = WidgetHelpers.WidgetEvent.ConfigurationChange;
+							var eventArgs = WidgetHelpers.WidgetEvent.Args(customSettings);
+							widgetConfigurationContext.notify(eventName, eventArgs);
+						});
 
 						return WidgetHelpers.WidgetStatusHelper.Success();
+					},
+					onSave: function () {
+						logDebug("onSave()");
+
+						var customSettings = {
+							data: JSON.stringify({
+								queryId: $queryDropdown.val(),
+								fieldName: $fieldDropdown.val(),
+								aggregationType: $aggregationDropdown.val(),
+								unit: $unitInput.val()
+							})
+						};
+
+						return WidgetHelpers.WidgetConfigurationSave.Valid(customSettings);
 					}
 				}
 			});
+
 			VSS.notifyLoadSucceeded();
 		});
-	</script>         
+	</script>
+	<style>
+		div.flex_container {
+			display: flex;
+			justify-content: space-between;
+		}
+
+		div.flex-child-growable {
+			flex: 1;
+		}
+
+		#query-dropdown>option {
+			color: black;
+			background-color: white;
+		}
+
+		#query-dropdown>option.inverted {
+			color: white;
+			background-color: black;
+		}
+
+		.color-picker {
+			width: 15px;
+			height: 15px;
+		}
+	</style>
 </head>
+
 <body>
 	<div class="widget-configuration">
-		<h2 class="title">Counter widget</h2>
-		<div class="big-count">223</div>
-		<div>Additional text</div>
+		<fieldset>
+			<label class="label">Query: </label>
+			<select id="query-dropdown" style="margin-top:10px;margin-bottom:10px">
+				<option value="" selected disabled hidden>Please select a query</option>
+			</select>
+		</fieldset>
+		<fieldset>
+			<label class="label">Field to aggregate: </label>
+			<select id="field-dropdown" style="margin-top:10px;margin-bottom:10px">
+				<option value="" selected disabled hidden>Please select a field</option>
+			</select>
+		</fieldset>
+		<fieldset>
+			<label class="label">Aggregation type: </label>
+			<select id="aggregation-dropdown" style="margin-top:10px;margin-bottom:10px">
+				<option value="" selected disabled hidden>Please select a type of aggregation</option>
+				<option value="sum">Sum</option>
+				<option value="highest">Highest</option>
+				<option value="lowest">Lowest</option>
+				<option value="mean">Mean</option>
+				<option value="countnotempty">Count(not empty)</option>
+			</select>
+		</fieldset>
+		<fieldset>
+			<label class="label">Unit: </label>
+			<input id="unit-input" type="text" name="unit" value="" style="margin-top:10px;;margin-bottom:10px" />
+		</fieldset>
+		<fieldset>
+			<label class="label">Default background color: </label>
+			<div id="258" style="display: block;">
+				<ul class="color-picker-palette" tabindex="0" style="width: 270px; visibility: visible; left: 1439px; top: 373px;">
+					<li class="color-picker-palette-single-color" data-hex-color="#222222" title="#222222" style="background-color: rgb(34, 34, 34);"></li>
+					<li class="color-picker-palette-single-color" data-hex-color="#666666" title="#666666" style="background-color: rgb(102, 102, 102);"></li>
+					<li class="color-picker-palette-single-color" data-hex-color="#292e6b" title="#292e6b" style="background-color: rgb(41, 46, 107);"></li>
+					<li class="color-picker-palette-single-color" data-hex-color="#009ccc" title="#009ccc" style="background-color: rgb(0, 156, 204);"></li>
+					<li class="color-picker-palette-single-color" data-hex-color="#00643a" title="#00643a" style="background-color: rgb(0, 100, 58);"></li>
+					<li class="color-picker-palette-single-color" data-hex-color="#339947" title="#339947" style="background-color: rgb(51, 153, 71);"></li>
+					<li class="color-picker-palette-single-color" data-hex-color="#fbbc3d" title="#fbbc3d" style="background-color: rgb(251, 188, 61);"></li>
+					<li class="color-picker-palette-single-color" data-hex-color="#db552c" title="#db552c" style="background-color: rgb(219, 85, 44);"></li>
+					<li class="color-picker-palette-single-color" data-hex-color="#7f1725" title="#7f1725" style="background-color: rgb(127, 23, 37);"></li>
+					<li class="color-picker-palette-single-color" data-hex-color="#ec008c" title="#ec008c" style="background-color: rgb(236, 0, 140);"></li>
+					<li class="color-picker-palette-single-color" data-hex-color="#5c197b" title="#5c197b" style="background-color: rgb(92, 25, 123);"></li>
+					<li class="color-picker-palette-single-color" data-hex-color="#51399f" title="#51399f" style="background-color: rgb(81, 57, 159);"></li>
+					<li class="color-picker-palette-single-color" data-hex-color="#ffffff" title="#ffffff" style="background-color: rgb(255, 255, 255);"></li>
+					<li class="color-picker-palette-single-color" data-hex-color="#cccccc" title="#cccccc" style="background-color: rgb(204, 204, 204);"></li>
+					<li class="color-picker-palette-single-color" data-hex-color="#007acc" title="#007acc" style="background-color: rgb(0, 122, 204);"></li>
+					<li class="color-picker-palette-single-color" data-hex-color="#c9e7e7" title="#c9e7e7" style="background-color: rgb(201, 231, 231);"></li>
+					<li class="color-picker-palette-single-color" data-hex-color="#7caf9a" title="#7caf9a" style="background-color: rgb(124, 175, 154);"></li>
+					<li class="color-picker-palette-single-color" data-hex-color="#a8ce4b" title="#a8ce4b" style="background-color: rgb(168, 206, 75);"></li>
+					<li class="color-picker-palette-single-color" data-hex-color="#fbfd52" title="#fbfd52" style="background-color: rgb(251, 253, 82);"></li>
+					<li class="color-picker-palette-single-color" data-hex-color="#f7a24b" title="#f7a24b" style="background-color: rgb(247, 162, 75);"></li>
+					<li class="color-picker-palette-single-color" data-hex-color="#e60017" title="#e60017" style="background-color: rgb(230, 0, 23);"></li>
+					<li class="color-picker-palette-single-color" data-hex-color="#f599d1" title="#f599d1" style="background-color: rgb(245, 153, 209);"></li>
+					<li class="color-picker-palette-single-color" data-hex-color="#ae88b9" title="#ae88b9" style="background-color: rgb(174, 136, 185);"></li>
+					<li class="color-picker-palette-single-color" data-hex-color="#aa9cdf" title="#aa9cdf" style="background-color: rgb(170, 156, 223);"></li>
+				</ul>
+			</div>
+			<input id="background-color-input" type="text" name="unit" value="" style="margin-top:10px;;margin-bottom:10px" />
+		</fieldset>
 	</div>
 </body>
 </html>

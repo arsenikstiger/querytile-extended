@@ -1,54 +1,223 @@
 <!DOCTYPE html>
 <html>
-<head>          
-	<script src="lib/VSS.SDK.js"></script>
-	<script type="text/javascript">
-		VSS.init({                        
-			explicitNotifyLoaded: true,
-			usePlatformStyles: true
-		});
-		const vssContext = VSS.getWebContext();
 
-		VSS.require("TFS/Dashboards/WidgetHelpers", function (WidgetHelpers) {
-			WidgetHelpers.IncludeWidgetStyles();
-			
-			VSS.register("querytile-extended-widget", function () {
-				return {
-					load: function (widgetSettings) {
-						
-						console.log("1. load");
-						
-						try
-						{
-							console.log(widgetSettings);
-						}
-						catch(error)
-						{
-							console.log("1.1. error");
-							console.log(error);
-						}
-						
-						console.log("2. modif text");
+<head>
+    <script src="bower_components/vss-web-extension-sdk/lib/VSS.SDK.min.js"></script>
+    <script type="text/javascript">
+        VSS.init({
+            explicitNotifyLoaded: true,
+            usePlatformStyles: true
+        });
 
-						var $title = $('h2.title');
-						$title.text("QueryTile Extended");
+        var configureLog = function () {
+            try {
+                var url = new URL(document.referrer);
+                var urlParams = new URLSearchParams(url.search.substring(1));
+                debug = urlParams.has("debug");
+                info = urlParams.has("info");
+            }
+            catch (exception) {
+                console.log("unable to configure Log");
+            }
+        }
 
-						console.log("3. return WidgetHelpers");
+        var logDebug = function (message) {
+            if (debug === true) {
+                console.log("[DEBUG] " + "(" + new Date().toLocaleTimeString() + ") ", message);
+            }
+        }
 
-						return WidgetHelpers.WidgetStatusHelper.Success();
-					}
-				}
-			});
+        var logInfo = function (message) {
+            if (info === true) {
+                console.log("[INFO] " + "(" + new Date().toLocaleTimeString() + ") ", message);
+            }
+        }
 
-			VSS.notifyLoadSucceeded();
-		});
-	</script>         
+        //Init
+        var debug = false;
+        var info = false;
+        configureLog();
+        var settings;
+
+        VSS.require(["TFS/Dashboards/WidgetHelpers", "TFS/WorkItemTracking/RestClient"], function (WidgetHelpers, RestClient) {
+            logDebug("VSS.require()");
+
+            WidgetHelpers.IncludeWidgetStyles();
+
+            //Gets current project ID
+            var projectId = VSS.getWebContext().project.id;
+            logInfo("VSS.getWebContext():");
+            logInfo(VSS.getWebContext());
+
+            VSS.register("querytile-extended-widget", function () {
+                logDebug("VSS.register()");
+
+                var getQueryInfo = function (widgetSettings) {
+                    logDebug("getQueryInfo()");
+
+                    // Extract query path from widgetSettings.customSettings and ask user to configure one if none is found
+                    var settings = JSON.parse(widgetSettings.customSettings.data);
+                    if (!settings || !settings.queryId || !settings.fieldName || !settings.aggregationType || !settings.unit) {
+                        var $workitems = $("#workitems");
+                        $workitems.text("Sorry nothing to show, please configure a query path");
+
+                        return WidgetHelpers.WidgetStatusHelper.Success();
+                    }
+
+                    //Get query by configured id
+                    return RestClient.getClient().queryById(settings.queryId, projectId)
+                        .then(function (queryByIdResult) {
+                            logInfo("RestClient.getClient().queryById(" + settings.queryId + ", " + projectId + "):");
+                            logInfo(queryByIdResult);
+
+                            var $queryLink = $("#query-link");
+                            $queryLink.prop("href", VSS.getWebContext().collection.uri + VSS.getWebContext().project.name + "/_workItems/resultsById/" + settings.queryId);
+
+                            var $workitems = $("#workitems");
+                            $workitems.text(queryByIdResult.workItems.length + " WI");
+
+                            var workItemIds = [];
+                            queryByIdResult.workItems.forEach(workItem => {
+                                workItemIds.push(workItem.id);
+                            });
+
+                            var fields = [];
+                            fields.push(settings.fieldName);
+
+                            //Get workitems from id list
+                            return RestClient.getClient().getWorkItems(workItemIds, fields)
+                                .then(function (getWorkItemsResult) {
+                                    logInfo("RestClient.getClient().getWorkItems(" + workItemIds + ", " + fields + "):");
+                                    logInfo(getWorkItemsResult);
+
+                                    logInfo("settings.fieldName: " + settings.fieldName);
+
+                                    const sum = (previous, current) => {
+                                        return previous + (current.fields[settings.fieldName] || 0);
+                                    }
+                                    const highest = (previous, current) => {
+                                        return previous > (current.fields[settings.fieldName] || 0) ? previous : (current.fields[settings.fieldName] || 0);
+                                    }
+                                    const lowest = (previous, current) => {
+                                        return previous < (current.fields[settings.fieldName] || 1000000) ? previous : (current.fields[settings.fieldName] || 1000000);
+                                    }
+                                    const countnotempty = (previous, current) => {
+                                        return current.fields[settings.fieldName] ? previous + 1 : previous;
+                                    }
+
+                                    var aggregation = 0;
+
+                                    switch (settings.aggregationType) {
+                                        case "sum":
+                                            aggregation = getWorkItemsResult.reduce(sum, 0);
+                                            logInfo("sum:");
+                                            logInfo(aggregation);
+                                            break;
+                                        case "highest":
+                                            aggregation = getWorkItemsResult.reduce(highest, 0);
+                                            logInfo("highest:");
+                                            logInfo(aggregation);
+                                            break;
+                                        case "lowest":
+                                            aggregation = getWorkItemsResult.reduce(lowest, 1000000);
+                                            logInfo("lowest:");
+                                            logInfo(aggregation);
+                                            break;
+                                        case "mean":
+                                            aggregation = getWorkItemsResult.reduce(sum, 0) / getWorkItemsResult.length();
+                                            logInfo("mean:");
+                                            logInfo(aggregation);
+                                            break;
+                                        case "countnotempty":
+                                            aggregation = getWorkItemsResult.reduce(countnotempty, 0);
+                                            logInfo("countnotempty:");
+                                            logInfo(aggregation);
+                                            break;
+                                    }
+
+                                    var $count = $('div.big-count');
+                                    $count.text(Math.round(aggregation));
+
+                                    // Use the widget helper and return success as Widget Status
+                                    return WidgetHelpers.WidgetStatusHelper.Success();
+                                });
+                        }, function (error) {
+                            // Use the widget helper and return failure as Widget Status
+                            return WidgetHelpers.WidgetStatusHelper.Failure(error.message);
+                        });
+                }
+
+                return {
+                    load: function (widgetSettings) {
+                        logDebug("onLoad()");
+
+                        logInfo("widgetSettings:");
+                        logInfo(widgetSettings);
+
+                        settings = JSON.parse(widgetSettings.customSettings.data);
+
+                        // Set your title
+                        var $title = $('h2.title');
+                        $title.text(widgetSettings.name);
+
+                        var $unit = $('#unit');
+                        $unit.text(settings.unit);
+
+                        return getQueryInfo(widgetSettings);
+                    },
+                    reload: function (widgetSettings) {
+                        logDebug("onReload()");
+
+                        logInfo("widgetSettings:");
+                        logInfo(widgetSettings);
+
+                        // Set your title
+                        var $title = $('h2.title');
+                        $title.text(widgetSettings.name);
+
+                        var $unit = $('#unit');
+                        $unit.text(settings.unit);
+
+                        return getQueryInfo(widgetSettings);
+                    }
+                }
+            });
+            VSS.notifyLoadSucceeded();
+        });
+    </script>
+    <style>
+        div.flex_container {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        div.flex-child-growable {
+            flex: 1;
+        }
+
+        #unit {
+            text-align: left;
+        }
+
+        #workitems {
+            text-align: right;
+        }
+    </style>
 </head>
+
 <body>
-	<div class="widget">
-		<h2 class="title">Counter widget</h2>
-		<div class="big-count">223</div>
-		<div>Additional text</div>
-	</div>
+    <div id="widget" class="widget clickable" style="background-color: rgb(255, 255, 255);">
+        <a id="query-link" href="" target="_parent">
+            <div>
+                <h2 class="title truncated-text-ellipsis">Counter widget</h2>
+                <div class="big-count truncated-text-ellipsis">223</div>
+                <div class="footer flex_container truncated-text-ellipsis">
+                    <div id="unit" class="truncated-text-ellipsis"></div>
+                    <div id="workitems" class="flex-child-growable truncated-text-ellipsis"></div>
+                </div>
+            </div>
+        </a>
+    </div>
 </body>
+
 </html>

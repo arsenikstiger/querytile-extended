@@ -1,73 +1,35 @@
 {
   "manifestVersion": 1,
   "id": "querytile-extended",
-  "version": "0.1.6",
+  "version": "0.1.78",
   "name": "Query Tile Extended",
-  "scopes": ["vso.work"],
   "description": "Query Tile extended wih aggregation function",
   "publisher": "aurelien-sudre",
-  "galleryFlags": [
-    "Preview"
-  ],
-  "icons": {
-    "default": "images/logo.png"
-  },
+  "scopes": ["vso.work"],
   "targets": [
     {
       "id": "Microsoft.VisualStudio.Services"
     }
   ],
-  "demands": [
-    "contribution/ms.vss-dashboards-web.widget-sdk-version-2"
-  ],
-  "tags": [
-    "Sample"
-  ],
-  "content": {
-    "license": {
-      "path": "license.md"
-    }
+  "icons": {
+    "default": "images/logo.png"
   },
-  "branding": {
-    "color": "rgb(220, 235, 252)",
-    "theme": "light"
-  },
-  "files": [
-    {
-      "path": "widget.html",
-      "addressable": true
-    },
-    {
-      "path": "configuration.html",
-      "addressable": true
-    },
-    {
-      "path": "sdk/node_modules/vss-web-extension-sdk/lib",
-      "addressable": true,
-      "packagePath": "lib"
-    },
-    {
-      "path": "images",
-      "addressable": true
-    }
-  ],
-  "categories": [
-    "Integrate"
-  ],
+  "demands": ["contribution/ms.vss-dashboards-web.widget-sdk-version-2"],
   "contributions": [
     {
       "id": "querytile-extended-widget",
       "type": "ms.vss-dashboards-web.widget",
       "targets": [
-        "ms.vss-dashboards-web.widget-catalog"
+        "ms.vss-dashboards-web.widget-catalog",
+        ".querytile-extended-widget-configuration"
       ],
       "properties": {
         "name": "Query Tile Extended",
         "description": "Query Tile Widget extended with aggregation function",
-        "uri": "widget.html",
-        "isNameConfigurable": true,
         "catalogIconUrl:": "images/logo.png",
         "previewImageUrl": "images/logo.png",
+        "uri": "widget.html",
+        "isNameConfigurable": true,
         "supportedSizes": [
           {
             "rowSpan": 1,
@@ -90,6 +52,24 @@
         "description": "Query Tile Widget extended with aggregation function",
         "uri": "configuration.html"
       }
+    }
+  ],
+  "files": [
+    {
+      "path": "widget.html",
+      "addressable": true
+    },
+    {
+      "path": "configuration.html",
+      "addressable": true
+    },
+    {
+      "path": "bower_components/vss-web-extension-sdk/lib/VSS.SDK.min.js",
+      "addressable": true
+    },
+    {
+      "path": "images",
+      "addressable": true
     }
   ]
 }
