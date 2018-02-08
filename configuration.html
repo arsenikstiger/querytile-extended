@@ -237,6 +237,8 @@
 
 				var $unitInput = $("#unit-input");
 
+				var $colorPickerPalette = $("#color-picker-palette");
+
 				return {
 					load: function (widgetSettings, widgetConfigurationContext) {
 						logDebug("onLoad()");
@@ -283,6 +285,10 @@
 							widgetConfigurationContext.notify(eventName, eventArgs);
 						});
 
+						$colorPickerPalette.on("click", function () {
+							
+						});
+
 						return WidgetHelpers.WidgetStatusHelper.Success();
 					},
 					onSave: function () {
@@ -325,9 +331,80 @@
 			background-color: black;
 		}
 
-		.color-picker {
-			width: 15px;
-			height: 15px;
+		.color-picker-combo {
+			border: 1px solid #eaeaea;
+			cursor: pointer;
+		}
+
+		.color-picker-combo .bowtie-triangle-down {
+			height: 100%;
+			width: 16px;
+			margin-top: 0;
+			background-color: #fff;
+			float: right;
+			padding-top: 4px;
+		}
+
+		.bowtie-icon,
+		.bowtie>i,
+		.bowtie-fabric>i {
+			font-family: "Bowtie";
+			font-size: 14px;
+			speak: none;
+			display: inline-block;
+			font-style: normal;
+			font-weight: normal;
+			font-variant: normal;
+			text-transform: none;
+			text-align: center;
+			text-decoration: none;
+			line-height: 16px;
+			-webkit-font-smoothing: antialiased;
+			-moz-osx-font-smoothing: grayscale;
+		}
+
+		.bowtie-triangle-down::before {
+			content: "\e9c9 ";
+		}
+
+		.color-picker-palette {
+			display: inline-block;
+			background-color: #fff;
+			box-shadow: #dadada 0 0 5px;
+			border-radius: 2px;
+			border: 1px solid #c8c8c8;
+			padding: 2px;
+			list-style: none;
+			cursor: pointer;
+			margin: 0;
+			position: fixed;
+			z-index: 100;
+			outline: none;
+		}
+
+		.color-picker-palette::after {
+			content: "";
+			display: table;
+			clear: both;
+		}
+
+		.color-picker-palette-single-color {
+			float: left;
+			height: 20px;
+			width: 20px;
+			margin: 1px;
+		}
+
+		.color-picker-palette-single-color-last {
+			clear: left;
+		}
+
+		.color-picker-palette-single-color-border {
+			border: 1px solid #dadada;
+		}
+
+		.color-picker-palette-single-color-selected {
+			border: 1px solid #0078d7;
 		}
 	</style>
 </head>
@@ -363,7 +440,11 @@
 		</fieldset>
 		<fieldset>
 			<label class="label">Default background color: </label>
-			<div id="258" style="display: block;">
+			<div id="1051" class="color-picker-combo" style="width: 100px; height: 25px; background-color: rgb(255, 255, 255);" tabindex="0"
+			 title="#fbfd52">
+				<span class="bowtie-icon bowtie-triangle-down"></span>
+			</div>
+			<div style="display: block;">
 				<ul class="color-picker-palette" tabindex="0" style="width: 270px; visibility: visible; left: 1439px; top: 373px;">
 					<li class="color-picker-palette-single-color" data-hex-color="#222222" title="#222222" style="background-color: rgb(34, 34, 34);"></li>
 					<li class="color-picker-palette-single-color" data-hex-color="#666666" title="#666666" style="background-color: rgb(102, 102, 102);"></li>
