@@ -52,14 +52,12 @@
             VSS.register("querytile-extended-widget", function () {
                 logDebug("VSS.register()");
 
-                var getQueryInfo = function (widgetSettings) {
+                var getQueryInfo = function () {
                     logDebug("getQueryInfo()");
 
-                    // Extract query path from widgetSettings.customSettings and ask user to configure one if none is found
-                    var settings = JSON.parse(widgetSettings.customSettings.data);
-                    if (!settings || !settings.queryId || !settings.fieldName || !settings.aggregationType || !settings.unit) {
+                    if (!settings || !settings.queryId || !settings.fieldName || !settings.aggregationType || !settings.unit || !settings.backgroundColor || !settings.color) {
                         var $workitems = $("#workitems");
-                        $workitems.text("Sorry nothing to show, please configure a query path");
+                        $workitems.text("Sorry nothing to show, please configure the widget");
 
                         return WidgetHelpers.WidgetStatusHelper.Success();
                     }
@@ -75,6 +73,15 @@
 
                             var $workitems = $("#workitems");
                             $workitems.text(queryByIdResult.workItems.length + " WI");
+
+                            //TODO : Si aucun élément, on renvoie directement
+                            if (queryByIdResult.workItems.length === 0) {
+                                var $count = $('div.big-count');
+                                $count.text("-");
+
+                                // Use the widget helper and return success as Widget Status
+                                return WidgetHelpers.WidgetStatusHelper.Success();
+                            }
 
                             var workItemIds = [];
                             queryByIdResult.workItems.forEach(workItem => {
@@ -93,16 +100,37 @@
                                     logInfo("settings.fieldName: " + settings.fieldName);
 
                                     const sum = (previous, current) => {
-                                        return previous + (current.fields[settings.fieldName] || 0);
+                                        if (!current.fields[settings.fieldName]) {
+                                            return previous;
+                                        }
+                                        var currentValue = current.fields[settings.fieldName];
+                                        return previous + currentValue;
                                     }
                                     const highest = (previous, current) => {
-                                        return previous > (current.fields[settings.fieldName] || 0) ? previous : (current.fields[settings.fieldName] || 0);
+                                        if (!current.fields[settings.fieldName]) {
+                                            return previous;
+                                        }
+                                        var currentValue = current.fields[settings.fieldName];
+                                        return previous > currentValue ? previous : currentValue;
                                     }
                                     const lowest = (previous, current) => {
-                                        return previous < (current.fields[settings.fieldName] || 1000000) ? previous : (current.fields[settings.fieldName] || 1000000);
+                                        if (!current.fields[settings.fieldName]) {
+                                            return previous;
+                                        }
+                                        var currentValue = current.fields[settings.fieldName];
+                                        return previous > -currentValue ? previous : -currentValue;
+                                    }
+                                    const countempty = (previous, current) => {
+                                        if (current.fields[settings.fieldName]) {
+                                            return previous;
+                                        }
+                                        return previous + 1;
                                     }
                                     const countnotempty = (previous, current) => {
-                                        return current.fields[settings.fieldName] ? previous + 1 : previous;
+                                        if (!current.fields[settings.fieldName]) {
+                                            return previous;
+                                        }
+                                        return previous + 1;
                                     }
 
                                     var aggregation = 0;
@@ -119,13 +147,18 @@
                                             logInfo(aggregation);
                                             break;
                                         case "lowest":
-                                            aggregation = getWorkItemsResult.reduce(lowest, 1000000);
+                                            aggregation = -getWorkItemsResult.reduce(lowest, 0);
                                             logInfo("lowest:");
                                             logInfo(aggregation);
                                             break;
-                                        case "mean":
-                                            aggregation = getWorkItemsResult.reduce(sum, 0) / getWorkItemsResult.length();
-                                            logInfo("mean:");
+                                        case "average":
+                                            aggregation = getWorkItemsResult.reduce(sum, 0) / getWorkItemsResult.length;
+                                            logInfo("average:");
+                                            logInfo(aggregation);
+                                            break;
+                                        case "countempty":
+                                            aggregation = getWorkItemsResult.reduce(countempty, 0);
+                                            logInfo("countempty:");
                                             logInfo(aggregation);
                                             break;
                                         case "countnotempty":
@@ -135,8 +168,30 @@
                                             break;
                                     }
 
+                                    if (settings.multiplicationFactor) {
+                                        aggregation = aggregation * settings.multiplicationFactor;
+                                    }
+
+                                    if (settings.divisionFactor) {
+                                        aggregation = aggregation / settings.divisionFactor;
+                                    }
+
+                                    if (settings.rounding) {
+                                        switch (settings.rounding) {
+                                            case "0":
+                                                aggregation = Math.round(aggregation);
+                                                break;
+                                            case "1":
+                                                aggregation = Math.round(aggregation * 10) / 10;
+                                                break;
+                                            case "2":
+                                                aggregation = Math.round(aggregation * 100) / 100;
+                                                break;
+                                        }
+                                    }
+
                                     var $count = $('div.big-count');
-                                    $count.text(Math.round(aggregation));
+                                    $count.text(aggregation);
 
                                     // Use the widget helper and return success as Widget Status
                                     return WidgetHelpers.WidgetStatusHelper.Success();
@@ -147,38 +202,38 @@
                         });
                 }
 
+                var applySettings = function (widgetSettings) {
+                    logInfo("applySettings():");
+                    logInfo(widgetSettings);
+
+                    settings = JSON.parse(widgetSettings.customSettings.data);
+
+                    // Set your title
+                    var $title = $('h2.title');
+                    $title.text(widgetSettings.name);
+
+                    var $unit = $('#unit');
+                    $unit.text(settings.unit);
+
+                    var $widget = $("#widget");
+                    $widget.css("background-color", settings.backgroundColor);
+
+                    var $queryLink = $("#query-link");
+                    $queryLink.css("color", settings.color);
+
+                    return getQueryInfo();
+                }
+
                 return {
                     load: function (widgetSettings) {
                         logDebug("onLoad()");
 
-                        logInfo("widgetSettings:");
-                        logInfo(widgetSettings);
-
-                        settings = JSON.parse(widgetSettings.customSettings.data);
-
-                        // Set your title
-                        var $title = $('h2.title');
-                        $title.text(widgetSettings.name);
-
-                        var $unit = $('#unit');
-                        $unit.text(settings.unit);
-
-                        return getQueryInfo(widgetSettings);
+                        return applySettings(widgetSettings);
                     },
                     reload: function (widgetSettings) {
                         logDebug("onReload()");
 
-                        logInfo("widgetSettings:");
-                        logInfo(widgetSettings);
-
-                        // Set your title
-                        var $title = $('h2.title');
-                        $title.text(widgetSettings.name);
-
-                        var $unit = $('#unit');
-                        $unit.text(settings.unit);
-
-                        return getQueryInfo(widgetSettings);
+                        return applySettings(widgetSettings);
                     }
                 }
             });
@@ -206,7 +261,7 @@
 </head>
 
 <body>
-    <div id="widget" class="widget clickable" style="background-color: rgb(255, 255, 255);">
+    <div id="widget" class="widget clickable" style="background-color: rgb(255, 255, 255); color: rgb(0, 0, 0);">
         <a id="query-link" href="" target="_parent">
             <div>
                 <h2 class="title truncated-text-ellipsis">Counter widget</h2>

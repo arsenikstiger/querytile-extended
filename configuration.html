@@ -227,6 +227,45 @@
 						});
 				}
 
+				var applyBackgroundColor = function (backgroundColor, color) {
+					//Apply color on combo
+					$colorPickerCombo.css("background-color", backgroundColor);
+					$colorPickerCombo.css("color", color);
+
+					$colorPickerCombo.prop("title", backgroundColor);
+					//Unset previously selected element
+					$(".color-picker-palette-single-color.color-picker-palette-single-color-selected").removeClass("color-picker-palette-single-color-selected");
+					//Set element selected
+					$(this).addClass("color-picker-palette-single-color-selected");
+				}
+
+				var collectSettings = function () {
+					logInfo("collectSettings():");
+					var customSettings = {
+						data: JSON.stringify({
+							queryId: $queryDropdown.val(),
+							fieldName: $fieldDropdown.val(),
+							aggregationType: $aggregationDropdown.val(),
+							multiplicationFactor: $multiplicationFactorInput.val(),
+							divisionFactor: $divisionFactorInput.val(),
+							rounding: $roundingDropdown.val(),
+							unit: $unitInput.val(),
+							backgroundColor: $colorPickerCombo.css("background-color"),
+							color: $colorPickerCombo.css("color")
+						})
+					};
+					logInfo(customSettings);
+					return customSettings;
+				}
+
+				var notifySettingsUpdate = function (widgetConfigurationContext) {
+					logInfo("notifySettingsUpdate():");
+					var customSettings = collectSettings();
+					var eventName = WidgetHelpers.WidgetEvent.ConfigurationChange;
+					var eventArgs = WidgetHelpers.WidgetEvent.Args(customSettings);
+					widgetConfigurationContext.notify(eventName, eventArgs);
+				}
+
 				var $queryDropdown = $("#query-dropdown");
 				$queryDropdown.prop('disabled', true);
 
@@ -235,9 +274,17 @@
 
 				var $aggregationDropdown = $("#aggregation-dropdown");
 
+				var $multiplicationFactorInput = $("#multiplication-factor-input");
+
+				var $divisionFactorInput = $("#division-factor-input");
+
+				var $roundingDropdown = $("#rounding-dropdown");
+
 				var $unitInput = $("#unit-input");
 
-				var $colorPickerPalette = $("#color-picker-palette");
+				var $colorPickerCombo = $(".color-picker-combo");
+
+				var $colorPickerPaletteSingleColor = $(".color-picker-palette-single-color");
 
 				return {
 					load: function (widgetSettings, widgetConfigurationContext) {
@@ -255,9 +302,29 @@
 							$aggregationDropdown.val(settings.aggregationType);
 						}
 
+						//Set configured multiplication factor
+						if (settings && settings.multiplicationFactor) {
+							$multiplicationFactorInput.val(settings.multiplicationFactor);
+						}
+
+						//Set configured division factor
+						if (settings && settings.divisionFactor) {
+							$divisionFactorInput.val(settings.divisionFactor);
+						}
+
+						//Select configured rounding
+						if (settings && settings.rounding) {
+							$roundingDropdown.val(settings.rounding);
+						}
+
 						//Set configured unit
 						if (settings && settings.unit) {
 							$unitInput.val(settings.unit);
+						}
+
+						//Set configured colors
+						if (settings && settings.backgroundColor && settings.color) {
+							applyBackgroundColor(settings.backgroundColor, settings.color);
 						}
 
 						populateQueries();
@@ -265,28 +332,63 @@
 						populateFields();
 
 						$queryDropdown.on("change", function () {
-							var customSettings = { data: JSON.stringify({ queryId: $queryDropdown.val() }) };
-							var eventName = WidgetHelpers.WidgetEvent.ConfigurationChange;
-							var eventArgs = WidgetHelpers.WidgetEvent.Args(customSettings);
-							widgetConfigurationContext.notify(eventName, eventArgs);
+							notifySettingsUpdate(widgetConfigurationContext);
 						});
 
 						$fieldDropdown.on("change", function () {
-							var customSettings = { data: JSON.stringify({ fieldName: $fieldDropdown.val() }) };
-							var eventName = WidgetHelpers.WidgetEvent.ConfigurationChange;
-							var eventArgs = WidgetHelpers.WidgetEvent.Args(customSettings);
-							widgetConfigurationContext.notify(eventName, eventArgs);
+							notifySettingsUpdate(widgetConfigurationContext);
 						});
 
 						$aggregationDropdown.on("change", function () {
-							var customSettings = { data: JSON.stringify({ aggregationType: $aggregationDropdown.val() }) };
-							var eventName = WidgetHelpers.WidgetEvent.ConfigurationChange;
-							var eventArgs = WidgetHelpers.WidgetEvent.Args(customSettings);
-							widgetConfigurationContext.notify(eventName, eventArgs);
+							notifySettingsUpdate(widgetConfigurationContext);
 						});
 
-						$colorPickerPalette.on("click", function () {
-							
+						$multiplicationFactorInput.on("input", function () {
+							notifySettingsUpdate(widgetConfigurationContext);
+						});
+
+						$multiplicationFactorInput.on("change", function () {
+							notifySettingsUpdate(widgetConfigurationContext);
+						});
+
+						$divisionFactorInput.on("input", function () {
+							notifySettingsUpdate(widgetConfigurationContext);
+						});
+
+						$divisionFactorInput.on("change", function () {
+							notifySettingsUpdate(widgetConfigurationContext);
+						});
+
+						$roundingDropdown.on("change", function () {
+							notifySettingsUpdate(widgetConfigurationContext);
+						});
+
+						$unitInput.on("input", function () {
+							notifySettingsUpdate(widgetConfigurationContext);
+						});
+
+						$unitInput.on("change", function () {
+							notifySettingsUpdate(widgetConfigurationContext);
+						});
+
+						$colorPickerPaletteSingleColor.on("click", function () {
+							//Get selected color
+							var backgroundColor = $(this).css("background-color");
+							var color = $(this).css("color");
+							applyBackgroundColor(backgroundColor, color);
+							var picker = $("#color-picker");
+							picker.hide();
+
+							notifySettingsUpdate(widgetConfigurationContext);
+						});
+
+						$colorPickerCombo.on("click", function () {
+							var picker = $("#color-picker");
+							var pickerPalette = $(".color-picker-palette");
+							pickerPalette.css("visibility", "visible");
+							pickerPalette.css("left", $(this).offset().left);
+							pickerPalette.css("top", $(this).offset().top + $(this).height());
+							picker.toggle();
 						});
 
 						return WidgetHelpers.WidgetStatusHelper.Success();
@@ -294,14 +396,7 @@
 					onSave: function () {
 						logDebug("onSave()");
 
-						var customSettings = {
-							data: JSON.stringify({
-								queryId: $queryDropdown.val(),
-								fieldName: $fieldDropdown.val(),
-								aggregationType: $aggregationDropdown.val(),
-								unit: $unitInput.val()
-							})
-						};
+						var customSettings = collectSettings();
 
 						return WidgetHelpers.WidgetConfigurationSave.Valid(customSettings);
 					}
@@ -350,7 +445,7 @@
 		.bowtie-fabric>i {
 			font-family: "Bowtie";
 			font-size: 14px;
-			speak: none;
+			/*speak: none;*/
 			display: inline-block;
 			font-style: normal;
 			font-weight: normal;
@@ -361,6 +456,7 @@
 			line-height: 16px;
 			-webkit-font-smoothing: antialiased;
 			-moz-osx-font-smoothing: grayscale;
+			color: #000000;
 		}
 
 		.bowtie-triangle-down::before {
@@ -393,6 +489,10 @@
 			height: 20px;
 			width: 20px;
 			margin: 1px;
+		}
+
+		.color-picker-palette-single-color:hover {
+			transform: scale(1.2);
 		}
 
 		.color-picker-palette-single-color-last {
@@ -430,50 +530,72 @@
 				<option value="sum">Sum</option>
 				<option value="highest">Highest</option>
 				<option value="lowest">Lowest</option>
-				<option value="mean">Mean</option>
+				<option value="average">Average</option>
+				<option value="countempty">Count(empty)</option>
 				<option value="countnotempty">Count(not empty)</option>
 			</select>
 		</fieldset>
 		<fieldset>
+			<label class="label">Multiplication factor: </label>
+			<input id="multiplication-factor-input" type="text" name="multiplication-factor" value="" style="margin-top:10px;margin-bottom:10px"
+			/>
+		</fieldset>
+		<fieldset>
+			<label class="label">Division factor: </label>
+			<input id="division-factor-input" type="text" name="division-factor" value="" style="margin-top:10px;margin-bottom:10px"
+			/>
+		</fieldset>
+		<fieldset>
+			<label class="label">Result rounding: </label>
+			<select id="rounding-dropdown" style="margin-top:10px;margin-bottom:10px">
+				<option value="" selected disabled hidden>Please select a value</option>
+				<option value="-1">No rounding</option>
+				<option value="0">Round to integer</option>
+				<option value="1">Round to 1 decimal</option>
+				<option value="2">Round to 2 decimal</option>
+			</select>
+		</fieldset>
+		<fieldset>
 			<label class="label">Unit: </label>
-			<input id="unit-input" type="text" name="unit" value="" style="margin-top:10px;;margin-bottom:10px" />
+			<input id="unit-input" type="text" name="unit" value="" style="margin-top:10px;margin-bottom:10px" />
 		</fieldset>
 		<fieldset>
 			<label class="label">Default background color: </label>
-			<div id="1051" class="color-picker-combo" style="width: 100px; height: 25px; background-color: rgb(255, 255, 255);" tabindex="0"
-			 title="#fbfd52">
+			<div class="color-picker-combo" style="height: 25px; margin-bottom: 100px; background-color: rgb(255, 255, 255); color: rgb(0, 0, 0);"
+			 tabindex="0" title="#ffffff">
 				<span class="bowtie-icon bowtie-triangle-down"></span>
+				<div id="color-picker" style="display: none; height: 100px;">
+					<ul class="color-picker-palette" tabindex="0" style="width: 270px;">
+						<li class="color-picker-palette-single-color" data-hex-color="#222222" title="#222222" style="background-color: rgb(34, 34, 34); color: rgb(255, 255, 255);"></li>
+						<li class="color-picker-palette-single-color" data-hex-color="#666666" title="#666666" style="background-color: rgb(102, 102, 102); color: rgb(255, 255, 255);"></li>
+						<li class="color-picker-palette-single-color" data-hex-color="#292e6b" title="#292e6b" style="background-color: rgb(41, 46, 107); color: rgb(255, 255, 255);"></li>
+						<li class="color-picker-palette-single-color" data-hex-color="#009ccc" title="#009ccc" style="background-color: rgb(0, 156, 204); color: rgb(255, 255, 255);"></li>
+						<li class="color-picker-palette-single-color" data-hex-color="#00643a" title="#00643a" style="background-color: rgb(0, 100, 58); color: rgb(255, 255, 255);"></li>
+						<li class="color-picker-palette-single-color" data-hex-color="#339947" title="#339947" style="background-color: rgb(51, 153, 71); color: rgb(255, 255, 255);"></li>
+						<li class="color-picker-palette-single-color" data-hex-color="#fbbc3d" title="#fbbc3d" style="background-color: rgb(251, 188, 61); color: rgb(0, 0, 0);"></li>
+						<li class="color-picker-palette-single-color" data-hex-color="#db552c" title="#db552c" style="background-color: rgb(219, 85, 44); color: rgb(255, 255, 255);"></li>
+						<li class="color-picker-palette-single-color" data-hex-color="#7f1725" title="#7f1725" style="background-color: rgb(127, 23, 37); color: rgb(255, 255, 255);"></li>
+						<li class="color-picker-palette-single-color" data-hex-color="#ec008c" title="#ec008c" style="background-color: rgb(236, 0, 140); color: rgb(255, 255, 255);"></li>
+						<li class="color-picker-palette-single-color" data-hex-color="#5c197b" title="#5c197b" style="background-color: rgb(92, 25, 123); color: rgb(255, 255, 255);"></li>
+						<li class="color-picker-palette-single-color" data-hex-color="#51399f" title="#51399f" style="background-color: rgb(81, 57, 159); color: rgb(255, 255, 255);"></li>
+						<li class="color-picker-palette-single-color color-picker-palette-single-color-border" data-hex-color="#ffffff" title="#ffffff"
+						 style="background-color: rgb(255, 255, 255); color: rgb(0, 0, 0);"></li>
+						<li class="color-picker-palette-single-color" data-hex-color="#cccccc" title="#cccccc" style="background-color: rgb(204, 204, 204); color: rgb(0, 0, 0);"></li>
+						<li class="color-picker-palette-single-color" data-hex-color="#007acc" title="#007acc" style="background-color: rgb(0, 122, 204); color: rgb(255, 255, 255);"></li>
+						<li class="color-picker-palette-single-color" data-hex-color="#c9e7e7" title="#c9e7e7" style="background-color: rgb(201, 231, 231); color: rgb(0, 0, 0);"></li>
+						<li class="color-picker-palette-single-color" data-hex-color="#7caf9a" title="#7caf9a" style="background-color: rgb(124, 175, 154); color: rgb(0, 0, 0);"></li>
+						<li class="color-picker-palette-single-color" data-hex-color="#a8ce4b" title="#a8ce4b" style="background-color: rgb(168, 206, 75); color: rgb(0, 0, 0);"></li>
+						<li class="color-picker-palette-single-color" data-hex-color="#fbfd52" title="#fbfd52" style="background-color: rgb(251, 253, 82); color: rgb(0, 0, 0);"></li>
+						<li class="color-picker-palette-single-color" data-hex-color="#f7a24b" title="#f7a24b" style="background-color: rgb(247, 162, 75); color: rgb(0, 0, 0);"></li>
+						<li class="color-picker-palette-single-color" data-hex-color="#e60017" title="#e60017" style="background-color: rgb(230, 0, 23); color: rgb(255, 255, 255);"></li>
+						<li class="color-picker-palette-single-color" data-hex-color="#f599d1" title="#f599d1" style="background-color: rgb(245, 153, 209); color: rgb(0, 0, 0);"></li>
+						<li class="color-picker-palette-single-color" data-hex-color="#ae88b9" title="#ae88b9" style="background-color: rgb(174, 136, 185); color: rgb(0, 0, 0);"></li>
+						<li class="color-picker-palette-single-color" data-hex-color="#aa9cdf" title="#aa9cdf" style="background-color: rgb(170, 156, 223); color: rgb(0, 0, 0);"></li>
+					</ul>
+				</div>
 			</div>
-			<div style="display: block;">
-				<ul class="color-picker-palette" tabindex="0" style="width: 270px; visibility: visible; left: 1439px; top: 373px;">
-					<li class="color-picker-palette-single-color" data-hex-color="#222222" title="#222222" style="background-color: rgb(34, 34, 34);"></li>
-					<li class="color-picker-palette-single-color" data-hex-color="#666666" title="#666666" style="background-color: rgb(102, 102, 102);"></li>
-					<li class="color-picker-palette-single-color" data-hex-color="#292e6b" title="#292e6b" style="background-color: rgb(41, 46, 107);"></li>
-					<li class="color-picker-palette-single-color" data-hex-color="#009ccc" title="#009ccc" style="background-color: rgb(0, 156, 204);"></li>
-					<li class="color-picker-palette-single-color" data-hex-color="#00643a" title="#00643a" style="background-color: rgb(0, 100, 58);"></li>
-					<li class="color-picker-palette-single-color" data-hex-color="#339947" title="#339947" style="background-color: rgb(51, 153, 71);"></li>
-					<li class="color-picker-palette-single-color" data-hex-color="#fbbc3d" title="#fbbc3d" style="background-color: rgb(251, 188, 61);"></li>
-					<li class="color-picker-palette-single-color" data-hex-color="#db552c" title="#db552c" style="background-color: rgb(219, 85, 44);"></li>
-					<li class="color-picker-palette-single-color" data-hex-color="#7f1725" title="#7f1725" style="background-color: rgb(127, 23, 37);"></li>
-					<li class="color-picker-palette-single-color" data-hex-color="#ec008c" title="#ec008c" style="background-color: rgb(236, 0, 140);"></li>
-					<li class="color-picker-palette-single-color" data-hex-color="#5c197b" title="#5c197b" style="background-color: rgb(92, 25, 123);"></li>
-					<li class="color-picker-palette-single-color" data-hex-color="#51399f" title="#51399f" style="background-color: rgb(81, 57, 159);"></li>
-					<li class="color-picker-palette-single-color" data-hex-color="#ffffff" title="#ffffff" style="background-color: rgb(255, 255, 255);"></li>
-					<li class="color-picker-palette-single-color" data-hex-color="#cccccc" title="#cccccc" style="background-color: rgb(204, 204, 204);"></li>
-					<li class="color-picker-palette-single-color" data-hex-color="#007acc" title="#007acc" style="background-color: rgb(0, 122, 204);"></li>
-					<li class="color-picker-palette-single-color" data-hex-color="#c9e7e7" title="#c9e7e7" style="background-color: rgb(201, 231, 231);"></li>
-					<li class="color-picker-palette-single-color" data-hex-color="#7caf9a" title="#7caf9a" style="background-color: rgb(124, 175, 154);"></li>
-					<li class="color-picker-palette-single-color" data-hex-color="#a8ce4b" title="#a8ce4b" style="background-color: rgb(168, 206, 75);"></li>
-					<li class="color-picker-palette-single-color" data-hex-color="#fbfd52" title="#fbfd52" style="background-color: rgb(251, 253, 82);"></li>
-					<li class="color-picker-palette-single-color" data-hex-color="#f7a24b" title="#f7a24b" style="background-color: rgb(247, 162, 75);"></li>
-					<li class="color-picker-palette-single-color" data-hex-color="#e60017" title="#e60017" style="background-color: rgb(230, 0, 23);"></li>
-					<li class="color-picker-palette-single-color" data-hex-color="#f599d1" title="#f599d1" style="background-color: rgb(245, 153, 209);"></li>
-					<li class="color-picker-palette-single-color" data-hex-color="#ae88b9" title="#ae88b9" style="background-color: rgb(174, 136, 185);"></li>
-					<li class="color-picker-palette-single-color" data-hex-color="#aa9cdf" title="#aa9cdf" style="background-color: rgb(170, 156, 223);"></li>
-				</ul>
-			</div>
-			<input id="background-color-input" type="text" name="unit" value="" style="margin-top:10px;;margin-bottom:10px" />
 		</fieldset>
 	</div>
 </body>
+
 </html>

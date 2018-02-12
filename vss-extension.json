@@ -1,11 +1,13 @@
 {
   "manifestVersion": 1,
   "id": "querytile-extended",
-  "version": "0.1.78",
+  "version": "0.2.1",
   "name": "Query Tile Extended",
   "description": "Query Tile extended wih aggregation function",
   "publisher": "aurelien-sudre",
-  "scopes": ["vso.work"],
+  "scopes": [
+    "vso.work"
+  ],
   "targets": [
     {
       "id": "Microsoft.VisualStudio.Services"
@@ -14,7 +16,9 @@
   "icons": {
     "default": "images/logo.png"
   },
-  "demands": ["contribution/ms.vss-dashboards-web.widget-sdk-version-2"],
+  "demands": [
+    "contribution/ms.vss-dashboards-web.widget-sdk-version-2"
+  ],
   "contributions": [
     {
       "id": "querytile-extended-widget",
@@ -34,6 +38,10 @@
           {
             "rowSpan": 1,
             "columnSpan": 1
+          },
+          {
+            "rowSpan": 1,
+            "columnSpan": 2
           }
         ],
         "supportedScopes": [
