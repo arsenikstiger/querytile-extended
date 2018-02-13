@@ -69,9 +69,9 @@
         configureLog();
         var settings;
 
-        if (detectIE() !== false) {
-            return WidgetHelpers.WidgetStatusHelper.Failure("IE not supported, please use Firefox or Chrome instead !");
-        }
+        // if (detectIE() !== false) {
+        //     return WidgetHelpers.WidgetStatusHelper.Failure("IE not supported, please use Firefox or Chrome instead !");
+        // }
 
         VSS.require(["TFS/Dashboards/WidgetHelpers", "TFS/WorkItemTracking/RestClient"], function (WidgetHelpers, RestClient) {
             logDebug("VSS.require()");

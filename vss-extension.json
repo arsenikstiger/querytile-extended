@@ -1,7 +1,7 @@
 {
   "manifestVersion": 1,
   "id": "querytile-extended",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "name": "Query Tile Extended",
   "description": "Query Tile extended wih aggregation function",
   "publisher": "aurelien-sudre",
