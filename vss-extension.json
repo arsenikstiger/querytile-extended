@@ -1,7 +1,7 @@
 {
   "manifestVersion": 1,
   "id": "querytile-extended",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "name": "Query Tile Extended",
   "description": "Query Tile Widget with aggregation functions: sum, highest, lowest, average, count of empty or non empty values, on all integer or decimal values of your WI, with rounding and multiplication factor.",
   "publisher": "aurelien-sudre",
@@ -34,6 +34,14 @@
       "uri": "https://github.com/arsenikstiger/querytile-extended/issues"
     }
   },
+  "content": {
+    "details": {
+        "path": "overview.md"
+    },
+    "license": {
+        "path": "license.md"
+    }
+},
   "repository": {
     "type": "git",
     "uri": "https://github.com/arsenikstiger/querytile-extended"

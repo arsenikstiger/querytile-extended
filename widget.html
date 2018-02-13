@@ -87,8 +87,6 @@
             VSS.register("querytile-extended-widget", function () {
                 logDebug("VSS.register()");
 
-
-
                 var getQueryInfo = function () {
                     logDebug("getQueryInfo()");
 
@@ -114,7 +112,7 @@
                             }
 
                             var workItemIds = [];
-                            queryByIdResult.workItems.forEach(workItem => {
+                            queryByIdResult.workItems.forEach(function(workItem) {
                                 workItemIds.push(workItem.id);
                             });
 
@@ -129,34 +127,38 @@
 
                                     logInfo("settings.fieldName: " + settings.fieldName);
 
-                                    const sum = (previous, current) => {
+                                    const sum = function(previous, current) {
                                         if (!current.fields[settings.fieldName]) {
                                             return previous;
                                         }
                                         var currentValue = current.fields[settings.fieldName];
                                         return previous + currentValue;
                                     }
-                                    const highest = (previous, current) => {
+
+                                    const highest = function(previous, current) {
                                         if (!current.fields[settings.fieldName]) {
                                             return previous;
                                         }
                                         var currentValue = current.fields[settings.fieldName];
                                         return previous > currentValue ? previous : currentValue;
                                     }
-                                    const lowest = (previous, current) => {
+
+                                    const lowest = function(previous, current) {
                                         if (!current.fields[settings.fieldName]) {
                                             return previous;
                                         }
                                         var currentValue = current.fields[settings.fieldName];
                                         return previous > -currentValue ? previous : -currentValue;
                                     }
-                                    const countempty = (previous, current) => {
+
+                                    const countempty = function(previous, current) {
                                         if (current.fields[settings.fieldName]) {
                                             return previous;
                                         }
                                         return previous + 1;
                                     }
-                                    const countnotempty = (previous, current) => {
+
+                                    const countnotempty = function(previous, current) {
                                         if (!current.fields[settings.fieldName]) {
                                             return previous;
                                         }

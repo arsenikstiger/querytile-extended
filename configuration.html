@@ -113,7 +113,7 @@
 								//For each child, iterate through it
 								logDebug("query.children:");
 								logDebug(updatedQuery.children);
-								updatedQuery.children.forEach(childQuery => {
+								updatedQuery.children.forEach(function(childQuery) {
 									logDebug("iterate a childQuery");
 									childQuery = iterateThroughQuery(childQuery);
 								});
@@ -127,7 +127,7 @@
 					//For each child, iterate through it
 					logDebug("query.children:");
 					logDebug(query.children);
-					query.children.forEach(childQuery => {
+					query.children.forEach(function(childQuery) {
 						logDebug("iterate a childQuery");
 						childQuery = iterateThroughQuery(childQuery);
 					});
@@ -206,7 +206,7 @@
 							logInfo("RestClient.getClient().getFields():");
 							logInfo(fields);
 
-							fields.forEach(field => {
+							fields.forEach(function(field) {
 								//If field is numeric, add it to the dropdown
 								if (field.type === Contracts.FieldType.Integer || field.type === Contracts.FieldType.Double) {
 									$fieldDropdown.append("<option value='" + field.referenceName + "' >" + field.name + "</option>");
