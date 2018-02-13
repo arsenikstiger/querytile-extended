@@ -235,29 +235,36 @@
                     logInfo("applySettings():");
                     logInfo(widgetSettings);
 
-                    settings = JSON.parse(widgetSettings.customSettings.data);
+                    //Sets settings only if data exists
+                    if (widgetSettings.customSettings.data) {
+                        settings = JSON.parse(widgetSettings.customSettings.data);
+                    }
 
                     //Sets default value
                     if (!settings
                         || !settings.rounding) {
-                        settings.rounding = 0;
+                        logDebug("settings.rounding sets to default");
+                        settings.rounding = "0";
                     }
-                    
+
                     //Sets default value
                     if (!settings
                         || !settings.unit) {
+                        logDebug("settings.unit sets to default");
                         settings.unit = "-";
                     }
 
                     //Sets default value
                     if (!settings
                         || !settings.backgroundColor) {
+                        logDebug("settings.backgroundColor sets to default");
                         settings.backgroundColor = "#ffffff";
                     }
 
                     //Sets default value
-                    if(!settings
+                    if (!settings
                         || !settings.color) {
+                        logDebug("settings.color sets to default");
                         settings.color = "#000000";
                     }
 
@@ -268,7 +275,7 @@
                     //Sets unit
                     var $unit = $('#unit');
                     $unit.text(settings.unit);
-                    
+
                     //Sets colors
                     var $widget = $("#widget");
                     $widget.css("background-color", settings.backgroundColor);
@@ -281,6 +288,7 @@
                         || !settings.queryId
                         || !settings.fieldName
                         || !settings.aggregationType) {
+                        logDebug("Mandatory settings missing : settings.queryId, settings.fieldName or settings.aggregationType");
 
                         var $count = $('div.big-count');
                         $count.text("-");
