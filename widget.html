@@ -217,6 +217,7 @@
 
                     var $widget = $("#widget");
                     $widget.css("background-color", settings.backgroundColor);
+                    $widget.addClass(settings.aggregationType);
 
                     var $queryLink = $("#query-link");
                     $queryLink.css("color", settings.color);
@@ -241,6 +242,36 @@
         });
     </script>
     <style>
+        #widget {
+            background-repeat: no-repeat;
+            background-position: top 6px right 6px;
+            background-size: 14px;
+        }
+
+        .sum-aggregation {
+            background-image: url("/images/sum.png");
+        }
+
+        .highest-aggregation {
+            background-image: url("/images/highest.png");
+        }
+
+        .lowest-aggregation {
+            background-image: url("/images/lowest.png");
+        }
+
+        .average-aggregation {
+            background-image: url("/images/average.png");
+        }
+
+        .countempty-aggregation {
+            background-image: url("/images/countempty.png");
+        }
+
+        .countnotempty-aggregation {
+            background-image: url("/images/countnotempty.png");
+        }
+
         div.flex_container {
             display: flex;
             justify-content: space-between;
