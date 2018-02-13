@@ -19,6 +19,8 @@
 			}
 			catch (exception) {
 				console.log("Unable to configure Log");
+				debug = true;
+				info = true;
 			}
 		}
 
@@ -163,7 +165,7 @@
 						//If query has children, iterate through them
 						if ("children" in query) {
 							logDebug("query has children");
-							query.children.forEach(childQuery => {
+							query.children.forEach(function(childQuery) {
 								childQuery = iterateThroughQuery(childQuery);
 							});
 						}
