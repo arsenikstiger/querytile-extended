@@ -1,7 +1,7 @@
 {
   "manifestVersion": 1,
   "id": "querytile-extended",
-  "version": "0.2.6",
+  "version": "0.2.7",
   "name": "Query Tile Extended",
   "description": "Query Tile extended wih aggregation function",
   "publisher": "aurelien-sudre",
@@ -30,8 +30,8 @@
       "properties": {
         "name": "Query Tile Extended",
         "description": "Query Tile Widget extended with aggregation function. Choose your public query. Emphasize the sum, highest, lowest, average, count of empty or non empty values, on all integer or decimal values of your workitems. Choose to round the result, apply multiplication or division factor. Choose the background color. You got it. Easily.",
-        "catalogIconUrl:": "images/logo.png",
-        "previewImageUrl": "images/logo.png",
+        "catalogIconUrl:": "images/catalog.png",
+        "previewImageUrl": "images/preview.png",
         "uri": "widget.html",
         "isNameConfigurable": true,
         "supportedSizes": [
