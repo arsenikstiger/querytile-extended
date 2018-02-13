@@ -1,13 +1,44 @@
 {
   "manifestVersion": 1,
   "id": "querytile-extended",
-  "version": "0.2.14",
+  "version": "1.0.0",
   "name": "Query Tile Extended",
-  "description": "Query Tile extended wih aggregation function",
+  "description": "Query Tile Widget extended with aggregation function. Choose your public query. Emphasize the sum, highest, lowest, average, count of empty or non empty values, on all integer or decimal values of your workitems. Choose to round the result, apply multiplication or division factor. Choose the background color. You got it. Easily.",
   "publisher": "aurelien-sudre",
   "scopes": [
     "vso.work"
   ],
+  "galleryFlags": [
+    "Public"
+  ],
+  "categories": [
+    "Plan and track",
+    "Collaborate"
+  ],
+  "tags": [
+    "dashboard",
+    "widget",
+    "query",
+    "tile",
+    "aggregation",
+    "sum",
+    "count",
+    "average",
+    "days",
+    "point"
+  ],
+  "links": {
+    "getstarted": {
+      "uri": "https://github.com/arsenikstiger/querytile-extended"
+    },
+    "support": {
+      "uri": "https://github.com/arsenikstiger/querytile-extended/issues"
+    }
+  },
+  "repository": {
+    "type": "git",
+    "uri": "https://github.com/arsenikstiger/querytile-extended"
+  },
   "targets": [
     {
       "id": "Microsoft.VisualStudio.Services"
@@ -78,6 +109,14 @@
     {
       "path": "images",
       "addressable": true
+    }
+  ],
+  "screenshots": [
+    {
+      "path": "images/preview.png"
+    },
+    {
+      "path": "images/preview-config.png"
     }
   ]
 }
