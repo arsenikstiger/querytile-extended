@@ -36,8 +36,6 @@ The widget is working on :
 - Firefox
 - Chrome
 - Edge
-
-It is currently not supported on :
 - Internet Explorer
 
 Let me know if it is compatible or not on other browser.
