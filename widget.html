@@ -89,7 +89,42 @@
                 var getQueryInfo = function () {
                     logDebug("getQueryInfo()");
 
-                    if (!settings || !settings.queryId || !settings.fieldName || !settings.aggregationType || !settings.unit || !settings.backgroundColor || !settings.color) {
+                    //Sets default value
+                    if (!settings.rounding) {
+                        settings.rounding = 0;
+                    }
+                    
+                    //Sets default value
+                    if (!settings.unit) {
+                        settings.unit = "-";
+                    }
+
+                    //Sets default value
+                    if (!settings.backgroundColor) {
+                        settings.backgroundColor = "#ffffff";
+                    }
+
+                    //Sets default value
+                    if(!settings.color) {
+                        settings.color = "#000000";
+                    }
+
+                    //Returns a message if some mandatory values are not present
+                    if (!settings
+                        || !settings.queryId
+                        || !settings.fieldName
+                        || !settings.aggregationType) {
+                        
+                        // Set your title
+                        var $title = $('h2.title');
+                        $title.text(widgetSettings.name);
+
+                        var $count = $('div.big-count');
+                        $count.text("-");
+
+                        var $unit = $('#unit');
+                        $unit.text(settings.unit);
+
                         var $workitems = $("#workitems");
                         $workitems.text("Sorry nothing to show, please configure the widget");
 
