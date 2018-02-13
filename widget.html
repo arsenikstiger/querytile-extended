@@ -86,50 +86,10 @@
             VSS.register("querytile-extended-widget", function () {
                 logDebug("VSS.register()");
 
+
+
                 var getQueryInfo = function () {
                     logDebug("getQueryInfo()");
-
-                    //Sets default value
-                    if (!settings.rounding) {
-                        settings.rounding = 0;
-                    }
-                    
-                    //Sets default value
-                    if (!settings.unit) {
-                        settings.unit = "-";
-                    }
-
-                    //Sets default value
-                    if (!settings.backgroundColor) {
-                        settings.backgroundColor = "#ffffff";
-                    }
-
-                    //Sets default value
-                    if(!settings.color) {
-                        settings.color = "#000000";
-                    }
-
-                    //Returns a message if some mandatory values are not present
-                    if (!settings
-                        || !settings.queryId
-                        || !settings.fieldName
-                        || !settings.aggregationType) {
-                        
-                        // Set your title
-                        var $title = $('h2.title');
-                        $title.text(widgetSettings.name);
-
-                        var $count = $('div.big-count');
-                        $count.text("-");
-
-                        var $unit = $('#unit');
-                        $unit.text(settings.unit);
-
-                        var $workitems = $("#workitems");
-                        $workitems.text("Sorry nothing to show, please configure the widget");
-
-                        return WidgetHelpers.WidgetStatusHelper.Success();
-                    }
 
                     //Get query by configured id
                     return RestClient.getClient().queryById(settings.queryId, projectId)
@@ -277,19 +237,59 @@
 
                     settings = JSON.parse(widgetSettings.customSettings.data);
 
-                    // Set your title
+                    //Sets default value
+                    if (!settings
+                        || !settings.rounding) {
+                        settings.rounding = 0;
+                    }
+                    
+                    //Sets default value
+                    if (!settings
+                        || !settings.unit) {
+                        settings.unit = "-";
+                    }
+
+                    //Sets default value
+                    if (!settings
+                        || !settings.backgroundColor) {
+                        settings.backgroundColor = "#ffffff";
+                    }
+
+                    //Sets default value
+                    if(!settings
+                        || !settings.color) {
+                        settings.color = "#000000";
+                    }
+
+                    //Sets title
                     var $title = $('h2.title');
                     $title.text(widgetSettings.name);
 
+                    //Sets unit
                     var $unit = $('#unit');
                     $unit.text(settings.unit);
-
+                    
+                    //Sets colors
                     var $widget = $("#widget");
                     $widget.css("background-color", settings.backgroundColor);
                     $widget.addClass(settings.aggregationType);
-
                     var $queryLink = $("#query-link");
                     $queryLink.css("color", settings.color);
+
+                    //Returns a message if some mandatory values are not present
+                    if (!settings
+                        || !settings.queryId
+                        || !settings.fieldName
+                        || !settings.aggregationType) {
+
+                        var $count = $('div.big-count');
+                        $count.text("-");
+
+                        var $workitems = $("#workitems");
+                        $workitems.text("Sorry nothing to show, please configure the widget");
+
+                        return WidgetHelpers.WidgetStatusHelper.Success();
+                    }
 
                     return getQueryInfo();
                 }
