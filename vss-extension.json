@@ -3,7 +3,7 @@
   "id": "querytile-extended",
   "version": "1.0.0",
   "name": "Query Tile Extended",
-  "description": "Query Tile Widget extended with aggregation function. Choose your public query. Emphasize the sum, highest, lowest, average, count of empty or non empty values, on all integer or decimal values of your workitems. Choose to round the result, apply multiplication or division factor. Choose the background color. You got it. Easily.",
+  "description": "Query Tile Widget with aggregation functions: sum, highest, lowest, average, count of empty or non empty values, on all integer or decimal values of your WI, with rounding and multiplication factor.",
   "publisher": "aurelien-sudre",
   "scopes": [
     "vso.work"
@@ -12,7 +12,6 @@
     "Public"
   ],
   "categories": [
-    "Plan and track",
     "Collaborate"
   ],
   "tags": [
@@ -60,7 +59,7 @@
       ],
       "properties": {
         "name": "Query Tile Extended",
-        "description": "Query Tile Widget extended with aggregation function. Choose your public query. Emphasize the sum, highest, lowest, average, count of empty or non empty values, on all integer or decimal values of your workitems. Choose to round the result, apply multiplication or division factor. Choose the background color. You got it. Easily.",
+        "description": "Query Tile Widget with aggregation functions: sum, highest, lowest, average, count of empty or non empty values, on all integer or decimal values of your WI, with rounding and multiplication factor.",
         "catalogIconUrl:": "images/logo.png",
         "previewImageUrl": "images/logo.png",
         "uri": "widget.html",
@@ -88,7 +87,7 @@
       ],
       "properties": {
         "name": "Query Tile Extended Configuration",
-        "description": "Query Tile Widget extended with aggregation function. Choose your public query. Emphasize the sum, highest, lowest, average, count of empty or non empty values, on all integer or decimal values of your workitems. Choose to round the result, apply multiplication or division factor. Choose the background color. You got it. Easily.",
+        "description": "Query Tile Widget with aggregation functions: sum, highest, lowest, average, count of empty or non empty values, on all integer or decimal values of your WI, with rounding and multiplication factor.",
         "uri": "configuration.html"
       }
     }
