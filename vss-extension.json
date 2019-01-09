@@ -116,6 +116,10 @@
     {
       "path": "images",
       "addressable": true
+    },
+    {
+      "path": "scripts/array-polyfill.js",
+      "addressable": true
     }
   ],
   "screenshots": [
