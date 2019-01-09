@@ -181,7 +181,7 @@
                                             logInfo(aggregation);
                                             break;
                                         case "lowest":
-                                            aggregation = -getWorkItemsResult.reduce(lowest, 0);
+                                            aggregation = -getWorkItemsResult.reduce(lowest, 999999);
                                             logInfo("lowest:");
                                             logInfo(aggregation);
                                             break;
