@@ -121,9 +121,29 @@
                             var fields = [];
                             fields.push(settings.fieldName);
 
+                            var promises = [];
+                            var workItemIdsBatch = [];
+
+                            for(var i = 1; i <= workItemIds.length; i++){
+
+                                workItemIdsBatch.push(workItemIds[i - 1]);
+
+                                if(i % 200 == 0 || i == workItemIds.length){
+                                    promises.push(RestClient.getClient().getWorkItems(workItemIdsBatch, fields));
+                                    workItemIdsBatch = [];
+                                }
+                            }
+
                             //Get workitems from id list
-                            return RestClient.getClient().getWorkItems(workItemIds, fields)
-                                .then(function (getWorkItemsResult) {
+                            return Promise.all(promises)
+                                .then(function (results) {
+
+                                    var getWorkItemsResult = [];
+
+                                    results.forEach(function(result){
+                                        getWorkItemsResult = getWorkItemsResult.concat(result);
+                                    });
+
                                     logInfo("RestClient.getClient().getWorkItems(" + workItemIds + ", " + fields + "):");
                                     logInfo(getWorkItemsResult);
 
