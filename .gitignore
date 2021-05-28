@@ -10,3 +10,4 @@ extension-*.json
 
 #npm log
 npm-debug.log
+/.vs/slnx.sqlite
