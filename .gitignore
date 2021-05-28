@@ -11,3 +11,5 @@ extension-*.json
 #npm log
 npm-debug.log
 /.vs/slnx.sqlite
+/.vs/querytile-extended/v15/.suo
+/.vs/VSWorkspaceState.json
