@@ -1,6 +1,7 @@
 dist/
 bower_components/
 node_modules/
+.vs/
 
 # Custom extension manifest
 extension-*.json
@@ -10,6 +11,3 @@ extension-*.json
 
 #npm log
 npm-debug.log
-/.vs/slnx.sqlite
-/.vs/querytile-extended/v15/.suo
-/.vs/VSWorkspaceState.json
