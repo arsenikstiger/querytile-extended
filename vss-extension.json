@@ -1,7 +1,7 @@
 {
   "manifestVersion": 1,
   "id": "SupOlivier-querytile-extended",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "name": "Query Tile Extended",
   "description": "Query Tile Widget, support all query type, with functions: sum, highest, lowest, average, ect. , on all integer or decimal values of your WI, with rounding and multiplication factor.",
   "publisher": "SupOlivier",
