@@ -10,6 +10,8 @@
 - Count empty values
 - Count non empty values
 
+This version support all query type and have no limit of Work Item count.
+
 ## HowTo
 First look at the configuration :
 
@@ -45,3 +47,9 @@ If you have some ideas for this widget to evolve, don't be shy and contact me on
 
 ## License
 The [code](https://github.com/arsenikstiger/querytile-extended) is open sourced under the [MIT license](license.md). We love and encourage community contributions.
+
+## For developper
+To package just execute
+```powershell
+tfx extension create --manifest-globs vss-extension.json
+```
