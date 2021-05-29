@@ -3,7 +3,7 @@
 
 <head>
     <script src="scripts/array-polyfill.js"></script>
-    <script src="bower_components/vss-web-extension-sdk/lib/VSS.SDK.min.js"></script>
+    <script src="scripts/VSS.SDK.min.js"></script>
     <script type="text/javascript">
         VSS.init({
             explicitNotifyLoaded: true,
@@ -101,11 +101,23 @@
                             var $queryLink = $("#query-link");
                             $queryLink.prop("href", VSS.getWebContext().collection.uri + VSS.getWebContext().project.name + "/_workItems/resultsById/" + settings.queryId);
 
-                            var $workitems = $("#workitems");
-                            $workitems.text(queryByIdResult.workItems.length + " WI");
+                            var queryResultCount = 0;
+							switch (queryByIdResult.queryResultType) {
+								case 1:
+									queryResultCount = queryByIdResult.workItems.length;
+									logDebug("queryByIdResult.workItems.length: " + queryByIdResult.workItems.length);
+									break;
+								case 2:
+									queryResultCount = queryByIdResult.workItemRelations.length
+									logDebug("queryByIdResult.workItemRelations.length: " + queryByIdResult.workItemRelations.length);
+									break;
+							}
+							
+							var $workitems = $("#workitems");
+                            $workitems.text(queryResultCount + " WI");
 
                             //TODO : Si aucun élément, on renvoie directement
-                            if (queryByIdResult.workItems.length === 0) {
+                            if (queryResultCount === 0) {
                                 var $count = $('div.big-count');
                                 $count.text("-");
 
@@ -114,16 +126,45 @@
                             }
 
                             var workItemIds = [];
-                            queryByIdResult.workItems.forEach(function(workItem) {
-                                workItemIds.push(workItem.id);
-                            });
+							switch (queryByIdResult.queryResultType) {
+								case 1:
+									queryByIdResult.workItems.forEach(function (workItem) {
+										workItemIds.push(workItem.id);
+									});
+									break;
+								case 2:
+									queryByIdResult.workItemRelations.forEach(function (workItemRelation) {
+										workItemIds.push(workItemRelation.target.id);
+									});
+									break;
+							}
 
                             var fields = [];
                             fields.push(settings.fieldName);
 
+                            var promises = [];
+                            var workItemIdsBatch = [];
+
+                            for(var i = 1; i <= workItemIds.length; i++){
+
+                                workItemIdsBatch.push(workItemIds[i - 1]);
+
+                                if(i % 200 == 0 || i == workItemIds.length){
+                                    promises.push(RestClient.getClient().getWorkItems(workItemIdsBatch, fields));
+                                    workItemIdsBatch = [];
+                                }
+                            }
+
                             //Get workitems from id list
-                            return RestClient.getClient().getWorkItems(workItemIds, fields)
-                                .then(function (getWorkItemsResult) {
+                            return Promise.all(promises)
+                                .then(function (results) {
+
+                                    var getWorkItemsResult = [];
+
+                                    results.forEach(function(result){
+                                        getWorkItemsResult = getWorkItemsResult.concat(result);
+                                    });
+								
                                     logInfo("RestClient.getClient().getWorkItems(" + workItemIds + ", " + fields + "):");
                                     logInfo(getWorkItemsResult);
 

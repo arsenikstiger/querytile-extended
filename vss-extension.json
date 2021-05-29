@@ -1,10 +1,10 @@
 {
   "manifestVersion": 1,
-  "id": "querytile-extended",
-  "version": "1.0.3",
+  "id": "SupOlivier-querytile-extended",
+  "version": "0.0.2",
   "name": "Query Tile Extended",
-  "description": "Query Tile Widget with aggregation functions: sum, highest, lowest, average, count of empty or non empty values, on all integer or decimal values of your WI, with rounding and multiplication factor.",
-  "publisher": "aurelien-sudre",
+  "description": "Query Tile Widget, support all query type, with functions: sum, highest, lowest, average, ect. , on all integer or decimal values of your WI, with rounding and multiplication factor.",
+  "publisher": "SupOlivier",
   "scopes": [
     "vso.work"
   ],
@@ -28,10 +28,10 @@
   ],
   "links": {
     "getstarted": {
-      "uri": "https://github.com/arsenikstiger/querytile-extended"
+      "uri": "https://github.com/SupOlivier/querytile-extended"
     },
     "support": {
-      "uri": "https://github.com/arsenikstiger/querytile-extended/issues"
+      "uri": "https://github.com/SupOlivier/querytile-extended/issues"
     }
   },
   "content": {
@@ -44,7 +44,7 @@
 },
   "repository": {
     "type": "git",
-    "uri": "https://github.com/arsenikstiger/querytile-extended"
+    "uri": "https://github.com/SupOlivier/querytile-extended"
   },
   "targets": [
     {
@@ -67,7 +67,7 @@
       ],
       "properties": {
         "name": "Query Tile Extended",
-        "description": "Query Tile Widget with aggregation functions: sum, highest, lowest, average, count of empty or non empty values, on all integer or decimal values of your WI, with rounding and multiplication factor.",
+        "description": "Query Tile Widget, support all query type, with aggregation functions: sum, highest, lowest, average, count of empty or non empty values, on all integer or decimal values of your WI, with rounding and multiplication factor.",
         "catalogIconUrl:": "images/logo.png",
         "previewImageUrl": "images/logo.png",
         "uri": "widget.html",
@@ -95,7 +95,7 @@
       ],
       "properties": {
         "name": "Query Tile Extended Configuration",
-        "description": "Query Tile Widget with aggregation functions: sum, highest, lowest, average, count of empty or non empty values, on all integer or decimal values of your WI, with rounding and multiplication factor.",
+        "description": "Query Tile Widget, support all query type, with functions: sum, highest, lowest, average, ect. , on all integer or decimal values of your WI, with rounding and multiplication factor.",
         "uri": "configuration.html"
       }
     }
