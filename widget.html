@@ -101,6 +101,22 @@
                             var $queryLink = $("#query-link");
                             $queryLink.prop("href", VSS.getWebContext().collection.uri + VSS.getWebContext().project.name + "/_workItems/resultsById/" + settings.queryId);
 
+                            // convert queryType id to string
+                            var queryTypeString = ""
+                            switch (queryByIdResult.queryType) {
+                                case 1:
+                                    queryTypeString = "Flat list of work items";
+                                    break;
+                                case 2:
+                                    queryTypeString = "Tree of work items";
+                                    break;
+                                case 3:
+                                    queryTypeString = "Work items and direct links";
+                                    break;
+                            }
+                            logInfo("The type of query is: "=queryTypeString);
+
+
                             var queryResultCount = 0;
 							switch (queryByIdResult.queryResultType) {
 								case 1:
@@ -114,7 +130,8 @@
 							}
 							
 							var $workitems = $("#workitems");
-                            $workitems.text(queryResultCount + " WI");
+                            $workitems.text(queryResultCount + " WI");                            
+                            //$workitems.html(queryResultCount + " WI <BR>" + queryTypeString);
 
                             //TODO : Si aucun élément, on renvoie directement
                             if (queryResultCount === 0) {
