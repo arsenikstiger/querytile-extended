@@ -53,3 +53,4 @@ To package just execute
 ```powershell
 tfx extension create --manifest-globs vss-extension.json
 ```
+
