@@ -1,10 +1,10 @@
 {
   "manifestVersion": 1,
-  "id": "SupOlivier-querytile-extended",
-  "version": "0.0.8",
-  "name": "Query Title Extended",
-  "description": "Query Title Widget, support all query type, with functions: sum, highest, lowest, average, ect. , on all integer or decimal values of your WI, with rounding and multiplication factor.",
-  "publisher": "SupOlivier",
+  "id": "querytile-extended",
+  "version": "1.0.3",
+  "name": "Query Tile Extended",
+  "description": "Query Tile Widget with aggregation functions: sum, highest, lowest, average, count of empty or non empty values, on all integer or decimal values of your WI, with rounding and multiplication factor.",
+  "publisher": "aurelien-sudre",
   "scopes": [
     "vso.work"
   ],
@@ -18,7 +18,7 @@
     "dashboard",
     "widget",
     "query",
-    "Title",
+    "tile",
     "aggregation",
     "sum",
     "count",
@@ -28,10 +28,10 @@
   ],
   "links": {
     "getstarted": {
-      "uri": "https://github.com/SupOlivier/querytile-extended"
+      "uri": "https://github.com/arsenikstiger/querytile-extended"
     },
     "support": {
-      "uri": "https://github.com/SupOlivier/querytile-extended/issues"
+      "uri": "https://github.com/arsenikstiger/querytile-extended/issues"
     }
   },
   "content": {
@@ -44,7 +44,7 @@
 },
   "repository": {
     "type": "git",
-    "uri": "https://github.com/SupOlivier/querytile-extended"
+    "uri": "https://github.com/arsenikstiger/querytile-extended"
   },
   "targets": [
     {
@@ -66,8 +66,8 @@
         ".querytile-extended-widget-configuration"
       ],
       "properties": {
-        "name": "Query Title Extended",
-        "description": "Query Title Widget, support all query type, with aggregation functions: sum, highest, lowest, average, count of empty or non empty values, on all integer or decimal values of your WI, with rounding and multiplication factor.",
+        "name": "Query Tile Extended",
+        "description": "Query Tile Widget with aggregation functions: sum, highest, lowest, average, count of empty or non empty values, on all integer or decimal values of your WI, with rounding and multiplication factor.",
         "catalogIconUrl:": "images/logo.png",
         "previewImageUrl": "images/logo.png",
         "uri": "widget.html",
@@ -80,18 +80,6 @@
           {
             "rowSpan": 1,
             "columnSpan": 2
-          },
-          {
-            "rowSpan": 1,
-            "columnSpan": 3
-          },
-          {
-            "rowSpan": 2,
-            "columnSpan": 2
-          },
-          {
-            "rowSpan": 2,
-            "columnSpan": 3
           }
         ],
         "supportedScopes": [
@@ -106,8 +94,8 @@
         "ms.vss-dashboards-web.widget-configuration"
       ],
       "properties": {
-        "name": "Query Title Extended Configuration",
-        "description": "Query Title Widget, support all query type, with functions: sum, highest, lowest, average, ect. , on all integer or decimal values of your WI, with rounding and multiplication factor.",
+        "name": "Query Tile Extended Configuration",
+        "description": "Query Tile Widget with aggregation functions: sum, highest, lowest, average, count of empty or non empty values, on all integer or decimal values of your WI, with rounding and multiplication factor.",
         "uri": "configuration.html"
       }
     }
@@ -122,7 +110,7 @@
       "addressable": true
     },
     {
-      "path": "scripts/VSS.SDK.min.js",
+      "path": "bower_components/vss-web-extension-sdk/lib/VSS.SDK.min.js",
       "addressable": true
     },
     {
