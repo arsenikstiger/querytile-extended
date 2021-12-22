@@ -101,11 +101,40 @@
                             var $queryLink = $("#query-link");
                             $queryLink.prop("href", VSS.getWebContext().collection.uri + VSS.getWebContext().project.name + "/_workItems/resultsById/" + settings.queryId);
 
-                            var $workitems = $("#workitems");
-                            $workitems.text(queryByIdResult.workItems.length + " WI");
+                            // convert queryType id to string
+                            var queryTypeString = ""
+                            switch (queryByIdResult.queryType) {
+                                case 1:
+                                    queryTypeString = "Flat list of work items";
+                                    break;
+                                case 2:
+                                    queryTypeString = "Tree of work items";
+                                    break;
+                                case 3:
+                                    queryTypeString = "Work items and direct links";
+                                    break;
+                            }
+                            logInfo("The type of query is: " + queryTypeString);
+
+
+                            var queryResultCount = 0;
+							switch (queryByIdResult.queryResultType) {
+								case 1:
+									queryResultCount = queryByIdResult.workItems.length;
+									logDebug("queryByIdResult.workItems.length: " + queryByIdResult.workItems.length);
+									break;
+								case 2:
+									queryResultCount = queryByIdResult.workItemRelations.length
+									logDebug("queryByIdResult.workItemRelations.length: " + queryByIdResult.workItemRelations.length);
+									break;
+							}
+							
+							var $workitems = $("#workitems");
+                            $workitems.text(queryResultCount + " WI");                            
+                            //$workitems.html(queryResultCount + " WI <BR>" + queryTypeString);
 
                             //TODO : Si aucun élément, on renvoie directement
-                            if (queryByIdResult.workItems.length === 0) {
+                            if (queryResultCount === 0) {
                                 var $count = $('div.big-count');
                                 $count.text("-");
 
@@ -114,16 +143,45 @@
                             }
 
                             var workItemIds = [];
-                            queryByIdResult.workItems.forEach(function(workItem) {
-                                workItemIds.push(workItem.id);
-                            });
+							switch (queryByIdResult.queryResultType) {
+								case 1:
+									queryByIdResult.workItems.forEach(function (workItem) {
+										workItemIds.push(workItem.id);
+									});
+									break;
+								case 2:
+									queryByIdResult.workItemRelations.forEach(function (workItemRelation) {
+										workItemIds.push(workItemRelation.target.id);
+									});
+									break;
+							}
 
                             var fields = [];
                             fields.push(settings.fieldName);
 
+                            var promises = [];
+                            var workItemIdsBatch = [];
+
+                            for(var i = 1; i <= workItemIds.length; i++){
+
+                                workItemIdsBatch.push(workItemIds[i - 1]);
+
+                                if(i % 200 == 0 || i == workItemIds.length){
+                                    promises.push(RestClient.getClient().getWorkItems(workItemIdsBatch, fields));
+                                    workItemIdsBatch = [];
+                                }
+                            }
+
                             //Get workitems from id list
-                            return RestClient.getClient().getWorkItems(workItemIds, fields)
-                                .then(function (getWorkItemsResult) {
+                            return Promise.all(promises)
+                                .then(function (results) {
+
+                                    var getWorkItemsResult = [];
+
+                                    results.forEach(function(result){
+                                        getWorkItemsResult = getWorkItemsResult.concat(result);
+                                    });
+								
                                     logInfo("RestClient.getClient().getWorkItems(" + workItemIds + ", " + fields + "):");
                                     logInfo(getWorkItemsResult);
 
